@@ -1,0 +1,59 @@
+version: '3.3'
+
+services:
+  redis:
+    hostname: redis
+    image: redis:6.2-alpine
+    restart: always
+    command: redis-server --save 20 1 --loglevel warning --appendonly yes
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - redis:/data
+    networks:
+      - main
+
+  server:
+    hostname: "proxy-server"
+    build:
+      context: server/
+      dockerfile: Dockerfile
+    healthcheck:
+      test: ["CMD-SHELL", "wget -O /dev/null http://localhost:1234 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - main
+
+  nginx:
+    build:
+      context: nginx/
+      dockerfile: Dockerfile
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "wget -O /dev/null http://localhost:8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    ports:
+      - "8080:8080"
+    networks:
+      - main
+    depends_on:
+      - redis
+      - server
+
+volumes:
+  redis:
+  
+networks:
+  main:
