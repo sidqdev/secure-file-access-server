@@ -46,7 +46,7 @@ end
 if value == ngx.null then
     ngx.log(ngx.ERR, "no host found for key ", key)
     ngx.status = 404
-    ngx.say("Not found peric")
+    ngx.say("Not found")
     return ngx.exit(ngx.OK)
 end
 
