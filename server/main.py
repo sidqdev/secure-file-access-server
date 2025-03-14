@@ -11,7 +11,7 @@ r = redis.Redis("redis")
 
 class ProxyData(BaseModel):
     url: str
-    ttl: str = None
+    ttl: int = None
     token: str = None
 
 
